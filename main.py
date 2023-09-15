@@ -7,7 +7,6 @@ from train_test import Solver
 def main(config):
     cudnn.benchmark = True
 
-    # 创建存储结果的文件夹
     if not os.path.exists(config.model_path):
         os.mkdir(config.model_path)
     if not os.path.exists(config.result_path):
@@ -23,7 +22,6 @@ def main(config):
     layer_results_path = os.path.join(results_path, 'layers1')
     dst_results_path = os.path.join(results_path, 'dst_layer')
 
-    #创建结果文件夹
     if not os.path.exists(results_path):
         os.mkdir(results_path)
     if not os.path.exists(layer_results_path):
@@ -40,10 +38,8 @@ def main(config):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    #数据的加载路径
     parser.add_argument('--data-path', type=str, default='')
     parser.add_argument('--cuda-idx', type=int, default=1)
-    # 模型参数
     parser.add_argument('--mode', type=str, default='')  # [train/test]
     parser.add_argument('--img-ch', type=int, default='')
     parser.add_argument('--num-classes', type=int, default='')
@@ -51,7 +47,6 @@ if __name__ == '__main__':
     parser.add_argument('--model_path', type=str, default='')
     parser.add_argument('--pretrained-model', type=str, default='')
 
-    #训练参数
     parser.add_argument('--num-epochs', type=int, default=1000)
     parser.add_argument('--batch-size', type=int, default=4)
     parser.add_argument('--lr', type=float, default=1e-4)
