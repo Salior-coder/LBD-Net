@@ -4,16 +4,14 @@ import torch
 
 def fusion(pred_prob, pred_dist, t_list):
     _, _, H, W = pred_prob.size()
-    L_hat = torch.argmax(pred_prob, dim=1)
-    L_c = L_hat.clone()
+    L_c = torch.argmax(pred_prob, dim=1)
     index = 0
     for i in range(6):
-
         BTDM_d = pred_dist[:, i]
         mask1 = torch.zeros_like(BTDM_d)
         mask2 = torch.zeros_like(BTDM_d)
-        mask1[(BTDM_d > 3/t_list[i]) & (L_c > i)] = 1
-        mask2[(BTDM_d < -(3/t_list[i+1])) & (L_c == i)] = 1
+        mask1[(BTDM_d > 2/t_list[i]) & (L_c > i)] = 1
+        mask2[(BTDM_d < -(2/t_list[i+1])) & (L_c == i)] = 1
         L_c[mask1.bool()] = i
         L_c[mask2.bool()] = i + 1
         index += 1
