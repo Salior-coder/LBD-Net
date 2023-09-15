@@ -3,7 +3,6 @@ import torch
 
 
 def get_dc(SR, GT, num_classes):
-    # SR(batch_size,h,w)
     SR = SR.numpy()
     GT = GT.numpy()
 
@@ -16,17 +15,11 @@ def get_dc(SR, GT, num_classes):
         f1_socre = dice_cal(one_hot_GT, one_hot_SR, num_classes=num_classes)
         batch_dice_score.append(f1_socre)
 
-    batch_dice_score = np.stack(batch_dice_score, axis=0)  # (4,2)
-
+    batch_dice_score = np.stack(batch_dice_score, axis=0)  
     batch_dice_score = np.delete(batch_dice_score, [0, num_classes - 1], axis=1)
     batch_mean_dice_score = np.mean(batch_dice_score, axis=0).squeeze()
 
     return batch_mean_dice_score
-
-
-def get_error(pred, gt):
-    return np.sum(np.abs(pred - gt))
-
 
 def f1_score_metrix(one_hot_label, one_hot_pred, num_classes):
     epsilon = 1e-6
