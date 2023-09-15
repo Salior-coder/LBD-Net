@@ -8,7 +8,6 @@ def point_sample(input, point_coords, **kwargs):
         add_dim = True
         point_coords = point_coords.unsqueeze(2)
 
-    # 2.0 * point_coords - 1.0将point_coords的坐标映射到[-1,1]的范围内
     output = F.grid_sample(input, 2.0 * point_coords - 1.0, **kwargs)
     if add_dim:
         output = output.squeeze(3)
