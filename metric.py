@@ -21,21 +21,6 @@ def get_dc(SR, GT, num_classes):
 
     return batch_mean_dice_score
 
-def f1_score_metrix(one_hot_label, one_hot_pred, num_classes):
-    epsilon = 1e-6
-    one_hot_label = np.transpose(one_hot_label, (1, 2, 0))
-    one_hot_pred = np.transpose(one_hot_pred, (1, 2, 0))
-    flat_label = one_hot_label.reshape(-1, num_classes).astype(np.uint8).reshape(-1, num_classes)
-    flat_pred = one_hot_pred.reshape(-1, num_classes).astype(np.uint8).reshape(-1, num_classes)
-    TP = np.sum(flat_pred * flat_label, axis=0).astype(np.float)
-    FP = np.sum(-flat_pred * (flat_label - 1), axis=0).astype(np.float)
-    FN = np.sum(-(flat_pred - 1) * flat_label, axis=0).astype(np.float)
-    precision = TP / (TP + FP + epsilon)
-    recall = TP / (TP + FN + epsilon)
-    f1_score = 2 * precision * recall / (precision + recall + epsilon)
-    return f1_score
-
-
 def dice_cal(one_hot_label, one_hot_pred, num_classes):
     epsilon = 1e-6
     one_hot_label = np.transpose(one_hot_label, (1, 2, 0))
@@ -49,3 +34,17 @@ def dice_cal(one_hot_label, one_hot_pred, num_classes):
     else:
         dice = (2 * inter) / (union)
     return dice
+
+def f1_score_metrix(one_hot_label, one_hot_pred, num_classes):
+    epsilon = 1e-6
+    one_hot_label = np.transpose(one_hot_label, (1, 2, 0))
+    one_hot_pred = np.transpose(one_hot_pred, (1, 2, 0))
+    flat_label = one_hot_label.reshape(-1, num_classes).astype(np.uint8).reshape(-1, num_classes)
+    flat_pred = one_hot_pred.reshape(-1, num_classes).astype(np.uint8).reshape(-1, num_classes)
+    TP = np.sum(flat_pred * flat_label, axis=0).astype(np.float)
+    FP = np.sum(-flat_pred * (flat_label - 1), axis=0).astype(np.float)
+    FN = np.sum(-(flat_pred - 1) * flat_label, axis=0).astype(np.float)
+    precision = TP / (TP + FP + epsilon)
+    recall = TP / (TP + FN + epsilon)
+    f1_score = 2 * precision * recall / (precision + recall + epsilon)
+    return f1_score
