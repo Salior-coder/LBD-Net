@@ -1,4 +1,4 @@
-#Boundary-repairing Dual-path Network for Retinal Layer Segmentation in OCT Images with Pigment Epithelial Detachment
+# Boundary-repairing Dual-path Network for Retinal Layer Segmentation in OCT Images with Pigment Epithelial Detachment
 
 Code for paper "Boundary-repairing Dual-path Network for Retinal Layer Segmentation in OCT Images with Pigment Epithelial Detachment."
 
@@ -6,7 +6,7 @@ The codes are implemented in PyTorch 1.1 and trained on NVIDIA GeForce RTX 3090T
 
 Parts of codes are borrowed from https://github.com/facebookresearch/detectron2/tree/master/projects/PointRend
 
-##datasets
+## datasets
 
 1、public OCTA-500 dataset：https://ieee-dataport.org/open-access/octa-500
 
