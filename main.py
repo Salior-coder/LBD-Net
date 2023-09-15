@@ -41,21 +41,19 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     #数据的加载路径
-    parser.add_argument('--data-path', type=str, default=r'D:\Experiment Dataset\OCTA')
+    parser.add_argument('--data-path', type=str, default='')
     parser.add_argument('--cuda-idx', type=int, default=1)
     # 模型参数
-    parser.add_argument('--mode', type=str, default='train')  # [train/test]
-    parser.add_argument('--img-ch', type=int, default=1)
-    parser.add_argument('--num-classes', type=int, default=7)
-    parser.add_argument('--result-path', type=str, default='./result')
-    parser.add_argument('--model_path', type=str, default='./models')
+    parser.add_argument('--mode', type=str, default='')  # [train/test]
+    parser.add_argument('--img-ch', type=int, default='')
+    parser.add_argument('--num-classes', type=int, default='')
+    parser.add_argument('--result-path', type=str, default='')
+    parser.add_argument('--model_path', type=str, default='')
     parser.add_argument('--pretrained-model', type=str, default='')
-    # parser.add_argument('--pretrained-model', type=str, default='./models/LBD_Net-1.pkl')
 
     #训练参数
     parser.add_argument('--num-epochs', type=int, default=1000)
-    parser.add_argument('--batch-size', type=int, default=1)
-    parser.add_argument('--num-workers', type=int, default=1)
+    parser.add_argument('--batch-size', type=int, default=4)
     parser.add_argument('--lr', type=float, default=1e-4)
 
     config = parser.parse_args()
