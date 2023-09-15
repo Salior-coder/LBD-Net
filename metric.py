@@ -2,43 +2,6 @@ import numpy as np
 import torch
 
 
-def layer_recoding(dst):
-    dst[dst > 0] = 1
-    dst[dst <= 0] = 0
-    diff_tensor = torch.empty((1, 5, 400, 400), dtype=torch.float32)
-    for i in range(5):
-        diff_tensor[:, i, ...] = dst[:, i + 1, ...] - dst[:, i, ...]
-        diff_tensor[:, i, ...] = torch.where(diff_tensor[:, i, ...] > 0, torch.tensor(i + 1), torch.tensor(0))
-    return diff_tensor
-
-
-def one_hot(label, num_classes):
-    one_hot = np.zeros((num_classes, label.shape[0], label.shape[1]), dtype=label.dtype)
-    for i in range(num_classes):
-        one_hot[i, ...] = (label == i)
-    return one_hot
-
-
-# 边界路径计算dice或f1
-def get_dc1(SR, GT, num_classes):
-    SR = SR.numpy()
-    GT = GT.numpy()
-    batch_dice_score = []
-
-    for i in range(SR.shape[0]):
-        one_hot_SR = SR.squeeze(0)
-        one_hot_GT = one_hot(GT[i, ...], num_classes)
-        one_hot_GT = one_hot_GT[1:-1, ...]
-        dice_socre = dice_cal(one_hot_GT, one_hot_SR, num_classes=num_classes - 2)
-        batch_dice_score.append(dice_socre)
-    #
-    batch_dice_score = np.stack(batch_dice_score, axis=0)
-    batch_mean_dice_score = np.mean(batch_dice_score, axis=0).squeeze()
-
-    return batch_mean_dice_score
-
-
-# 层路径计算dice或f1
 def get_dc(SR, GT, num_classes):
     # SR(batch_size,h,w)
     SR = SR.numpy()
