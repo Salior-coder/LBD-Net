@@ -32,7 +32,6 @@ class Solver(nn.Module):
         self.best_test_dice = 0
         self.network_type = 'LBD_Net'
         self.save_path = config.data_path
-        self.log_txt = []
 
         self.network = lbdNet(self.img_ch, self.num_classes)
         self.PointHead = PointHead()
@@ -43,23 +42,6 @@ class Solver(nn.Module):
         self.network.to(self.device)
         self.PointHead.to(self.device)
 
-    def init_weights(self, net, init_type='normal', gain=0.02):
-        def init_func(m):
-            classname = m.__class__.__name__
-            if hasattr(m, 'weight') and (classname.find('Conv') != -1 or classname.find('Linear') != -1):
-                if init_type == 'normal':
-                    init.normal_(m.weight.data, 0.0, gain)
-                else:
-                    raise NotImplementedError('initialization method [%s] is not implemented' % init_type)
-                if hasattr(m, 'bias') and m.bias is not None:
-                    init.constant_(m.bias.data, 0.0)
-            elif classname.find('BatchNorm2d') != -1:
-                init.normal_(m.weight.data, 1.0, gain)
-                init.constant_(m.bias.data, 0.0)
-
-        print('initialize network with %s' % init_type)
-        net.apply(init_func)
-
     def train(self):
         if self.pretrained_model:
             self.epoch_start = int(self.pretrained_model.split('\\')[-1].split('.')[0].split('-')[1]) - 1
@@ -69,9 +51,6 @@ class Solver(nn.Module):
         else:
             self.init_weights(self.network)
 
-        log_name = os.path.join(self.model_save_path, 'log.txt')
-        if os.path.exists(log_name):
-            os.remove(log_name)
         for epoch in range(self.epoch_start, self.num_epochs):
             self.network.train()
             epoch_loss = 0
@@ -97,6 +76,7 @@ class Solver(nn.Module):
                     mode="nearest",
                     align_corners=False
                 ).squeeze_(1).long()
+                
                 rpLoss = F.cross_entropy(result["rend"], gt_points, ignore_index=255)
 
                 pred_s = F.softmax(pred.detach(), dim=1)
@@ -104,7 +84,6 @@ class Solver(nn.Module):
 
                 ctrLoss = self.ctr_criterion(fine, pred, gts)
 
-                # 监督损失：segLoss包括层路径的dice和ce，以及边界路径的MSE损失
                 supLoss = self.seg_criterion(F.softmax(pred, dim=1), gts, dst_pred_t, gts_dst)
 
                 loss = supLoss + 0.2 * ctrLoss + 0.8 * rpLoss
@@ -149,19 +128,6 @@ class Solver(nn.Module):
                 (avg_test_layer_dice, test_dice[0], test_dice[1], test_dice[2], test_dice[3], test_dice[4]))
 
 
-            with open(log_name, 'a+') as file:
-                line = 'epoch:%d, seg_loss:%.4f,\n' % \
-                       (epoch + 1, epoch_loss / num)
-                file.write(line)
-                line = 'test_layer dice:%.4f, [ILM~IPL:%.4f, INL~OPL:%.4f, ONL:%.4f, IS~OS:%.4f,RPE:%.4f]\n' % \
-                       (avg_test_layer_dice, test_dice[0], test_dice[1], test_dice[2], test_dice[3], test_dice[4])
-                file.write(line)
-            if avg_test_layer_dice > self.best_test_dice:
-                self.best_test_dice = avg_test_layer_dice
-                with open(log_name, 'a+') as file:
-                    line = '****** layer dice is best!!! ******\n'
-                    file.write(line)
-
             save_path = os.path.join(self.model_save_path, '{}-{}.pkl'.format(self.network_type, epoch + 1))
             torch.save(self.network.state_dict(), save_path)
 
@@ -193,9 +159,6 @@ class Solver(nn.Module):
                 layers = decode_labels(image, layers)
                 layer_name = os.path.join(layer_path, image_id + '.png')
                 io.imsave(layer_name, layers)
-
-                if i == 100:
-                    break
 
         test_dice = list(np.mean(np.stack(test_dice_list), axis=0))
         avg_dice = np.mean(test_dice)
