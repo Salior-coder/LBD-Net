@@ -174,7 +174,6 @@ class Solver(nn.Module):
         with torch.no_grad():
             self.network.eval()
             test_dice_list = []
-            test_dst_dice_list = []
             for i, data in enumerate(self.test_loader):
                 images, layers_t, dst_t, t_list, image_id = data
                 image_id = image_id[0]
@@ -182,39 +181,25 @@ class Solver(nn.Module):
                 images = images.to(self.device)
                 fine, layers, dst = self.network(images)
 
-                # result = self.PointHead(fine, layers)
-                # layers = F.softmax(result["fine"], dim=1)
+                result = self.PointHead(fine, layers)
+                layers = F.softmax(result["fine"], dim=1)
                 fin_res = fusion(layers.cpu(), dst.cpu(), t_list)
                 dice = get_dc(fin_res.cpu(), layers_t, self.num_classes)
-                # dice = get_dc(torch.argmax(layers.cpu(), 1), layers_t, self.num_classes)
 
-                # dst_diff = layer_recoding(dst_t.cpu())
-                # dst_dice = get_dc1(dst_diff, layers_t, self.num_classes)
                 test_dice_list.append(dice)
-                # test_dst_dice_list.append(dst_dice)
 
                 image = io.imread(os.path.join(self.save_path, 'test', 'images', image_id + '.png'))
-                # layers = torch.argmax(layers.cpu(), 1).squeeze().numpy()
                 layers = fin_res.squeeze().numpy()
-                layer_t = layers_t.numpy().squeeze()
                 layers = decode_labels(image, layers)
-                layers_t = decode_labels(image, layer_t)
-                layers_t_name = os.path.join(layer_path, image_id + '_t.png')
                 layer_name = os.path.join(layer_path, image_id + '.png')
                 io.imsave(layer_name, layers)
-                io.imsave(layers_t_name, layers_t)
 
                 if i == 100:
                     break
 
         test_dice = list(np.mean(np.stack(test_dice_list), axis=0))
-        # test_dst_dice = list(np.mean(np.stack(test_dst_dice_list), axis=0))
         avg_dice = np.mean(test_dice)
-        # avg_dst_dice = np.mean(test_dst_dice)
-        # test_dice = np.mean(test_dice_list)
         print(
             '[Test  Set/layer] AvgDice:%.4f, [ILM~IPL:%.4f, INL~OPL:%.4f, ONL:%.4f, IS~OS:%.4f,RPE:%.4f,]' %
             (avg_dice, test_dice[0], test_dice[1], test_dice[2], test_dice[3], test_dice[4]))
-        # print(
-        #     '[Test  Set/boundary] AvgDice:%.4f, [ILM~IPL:%.4f, INL~OPL:%.4f, ONL:%.4f, IS~OS:%.4f,RPE:%.4f,]' %
-        #     (avg_dst_dice, test_dst_dice[0], test_dst_dice[1], test_dst_dice[2], test_dst_dice[3], test_dst_dice[4]))
+
