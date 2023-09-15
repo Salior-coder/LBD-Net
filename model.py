@@ -58,7 +58,6 @@ class lbdNet(nn.Module):
         return self.parameters()
 
 
-# 残差U-Net的结构
 class BasicBlock(nn.Module):
     def __init__(self, in_ch, out_ch):
         super(BasicBlock, self).__init__()
@@ -81,9 +80,7 @@ class EncoderBlock(BasicBlock):
         self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2, return_indices=True)
 
     def forward(self, input):
-        # out 这里是跳跃连接的特征
         out = super(EncoderBlock, self).forward(input)
-        # out_encoder是下采样后的特征，indices返回最大索引所在的位置
         out_encoder, indices = self.maxpool(out)
         return out_encoder, out, indices
 
@@ -118,16 +115,15 @@ class FIFDecoderBlock(nn.Module):
             nn.BatchNorm2d(out_ch),
         )
 
-    # input1为layer路径的输入，input2为boundary路径的输出，跳跃连接的输出，indices是索引
     def forward(self, input1, input2, out_block, indices):
-        # 上采样后的特征
         uppool1 = self.uppool(input1, indices)
         uppool2 = self.uppool(input2, indices)
-        # layer路径中上采样和跳跃连接concat之后的特征
+        
         concatS = torch.cat((out_block, uppool1), dim=1)
         updateS = self.update1(concatS)
         concatB = torch.cat((updateS, uppool2), dim=1)
         updateB = self.update2(concatB)
+        
         outS = self.prelu(self.transform1(concatS) + updateS + self.bn(self.conv(torch.cat((updateS, updateB), dim=1))))
         outB = self.prelu(updateB + self.transform2(concatB))
         return outS, outB
